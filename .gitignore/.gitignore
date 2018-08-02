@@ -1,0 +1,67 @@
+<script src="//app-ab24.marketo.com/js/forms2/js/forms2.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBZB5wLvPV6EaaqCHkW3VosoXElvM_3OL8&libraries=places"></script>  
+<form id="mktoForm_1076"></form>
+<script>
+MktoForms2.loadForm("//app-ab24.marketo.com", "073-KIV-332", 1076,function (form)  {
+
+//Locate the field to trigger the auto-compleat  
+  var location = document.getElementById('googleAddress');
+
+//Pass Google the field  
+  var autocomplete = new google.maps.places.Autocomplete(location);
+//Trigger the callback function  
+  autocomplete.addListener('place_changed', function() {  
+      var place = autocomplete.getPlace();  
+      //Populate Marketo hidden fields  
+     var address_components = autocomplete.getPlace().address_components,
+            acAddress, 
+            acCity, 
+            acState,
+            acPostalCode;
+        
+        for ( var i = 0, imax = address_components.length; i < imax; i++ ) { 
+            var component = address_components[i], 
+                types = component.types, 
+                short_name = component.short_name,
+                long_name = component.long_name;
+        
+            for ( var ii = 0, iimax = types.length; ii < iimax; ii++ ) {
+                var type = types[ii];
+                switch (type) {
+                case 'administrative_area_level_1':
+                    acState = short_name;
+                    break;
+                case 'locality':
+                case 'sublocality':
+                    acCity = long_name;
+                    break;
+                case 'route':
+                    acAddress  = !acAddress ? short_name : acAddress + ' ' + short_name;
+                    break;
+                case 'street_number':
+                    acAddress = !acAddress ? short_name : short_name + ' ' + acAddress;
+                    break;
+                case 'postal_code_suffix':
+                    acPostalCode  = !acPostalCode ? short_name : acPostalCode + ' ' + short_name;
+                    break;
+                case 'postal_code':
+                    acPostalCode = !acPostalCode ? short_name : short_name + ' ' + acPostalCode;
+                    break;
+                default:
+                }
+    
+            }
+        }
+        
+        console.log( acAddress, acCity, acState, acPostalCode );
+
+form.vals({"Address":acAddress,  
+        "City":acCity,  
+        "Country":" ",  
+        "State":acState,  
+        "PostalCode":acPostalCode});
+  
+      });  
+});
+
+</script>
